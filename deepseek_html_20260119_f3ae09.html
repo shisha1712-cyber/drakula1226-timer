@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRAKULA1226 - Таймер</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0c0c0c, #1a1a2e);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            text-align: center;
+            max-width: 1200px;
+            width: 100%;
+            padding: 20px;
+        }
+        
+        .header {
+            margin-bottom: 50px;
+        }
+        
+        .main-title {
+            font-size: 4.5rem;
+            font-weight: 900;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+            background: linear-gradient(90deg, #ff0000, #ff6b6b, #ff0000);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s infinite linear;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+        
+        .subtitle {
+            font-size: 1.8rem;
+            font-weight: 300;
+            color: #aaa;
+            letter-spacing: 1px;
+        }
+        
+        .divider {
+            height: 4px;
+            width: 200px;
+            background: linear-gradient(90deg, transparent, #ff0000, transparent);
+            margin: 60px auto;
+        }
+        
+        .timer-container {
+            background: rgba(10, 10, 20, 0.8);
+            border-radius: 20px;
+            padding: 40px 20px;
+            box-shadow: 0 0 40px rgba(255, 0, 0, 0.2);
+            border: 1px solid rgba(255, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            margin-top: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .timer-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #ff0000, #ff6b6b);
+        }
+        
+        .timer-title {
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            color: #ff6b6b;
+            font-weight: 300;
+        }
+        
+        .timer {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+        
+        .time-unit {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 150px;
+        }
+        
+        .time-value {
+            font-size: 5rem;
+            font-weight: 800;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(90deg, #fff, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            text-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+        }
+        
+        .time-label {
+            font-size: 1.2rem;
+            color: #aaa;
+            margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .start-date {
+            margin-top: 40px;
+            font-size: 1.2rem;
+            color: #888;
+            font-style: italic;
+        }
+        
+        .start-date span {
+            color: #ff6b6b;
+            font-weight: 600;
+        }
+        
+        /* Стили для кнопки помощи */
+        .help-section {
+            margin: 60px auto 30px;
+            text-align: center;
+        }
+        
+        .help-btn {
+            background: linear-gradient(90deg, #ff0000, #b30000);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.4rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(255, 0, 0, 0.3);
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .help-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 0, 0, 0.5);
+        }
+        
+        .help-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 3px 15px rgba(255, 0, 0, 0.4);
+        }
+        
+        .help-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.7s;
+        }
+        
+        .help-btn:hover::after {
+            left: 100%;
+        }
+        
+        /* Стили для контекстного меню */
+        .context-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .context-menu.active {
+            display: flex;
+        }
+        
+        .context-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 0 50px rgba(255, 0, 0, 0.4);
+            border: 1px solid rgba(255, 0, 0, 0.2);
+            position: relative;
+            animation: slideUp 0.4s ease;
+        }
+        
+        .context-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #ff0000, #ff6b6b);
+            border-radius: 20px 20px 0 0;
+        }
+        
+        .context-message {
+            font-size: 1.8rem;
+            margin-bottom: 40px;
+            color: #ff6b6b;
+            line-height: 1.4;
+            text-align: center;
+            padding: 0 10px;
+        }
+        
+        .context-options {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .context-btn {
+            padding: 15px 35px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 150px;
+        }
+        
+        .context-btn.understood {
+            background: linear-gradient(90deg, #2e7d32, #1b5e20);
+            color: white;
+        }
+        
+        .context-btn.realized {
+            background: linear-gradient(90deg, #1565c0, #0d47a1);
+            color: white;
+        }
+        
+        .context-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .context-btn:active {
+            transform: translateY(0);
+        }
+        
+        .footer {
+            margin-top: 30px;
+            color: #666;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        
+        .pulse {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background-color: #ff0000;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(0.8); opacity: 0.7; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.8); opacity: 0.7; }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 3rem;
+            }
+            
+            .subtitle {
+                font-size: 1.4rem;
+            }
+            
+            .time-value {
+                font-size: 3.5rem;
+            }
+            
+            .time-unit {
+                min-width: 120px;
+            }
+            
+            .context-message {
+                font-size: 1.5rem;
+            }
+            
+            .context-options {
+                gap: 15px;
+            }
+            
+            .context-btn {
+                min-width: 130px;
+                padding: 12px 25px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .main-title {
+                font-size: 2.5rem;
+            }
+            
+            .subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .time-value {
+                font-size: 2.5rem;
+            }
+            
+            .time-unit {
+                min-width: 90px;
+            }
+            
+            .timer {
+                gap: 15px;
+            }
+            
+            .help-btn {
+                padding: 15px 30px;
+                font-size: 1.2rem;
+            }
+            
+            .context-message {
+                font-size: 1.3rem;
+            }
+            
+            .context-content {
+                padding: 30px 20px;
+            }
+            
+            .context-btn {
+                min-width: 120px;
+                padding: 12px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="main-title">DRAKULA1226</h1>
+            <p class="subtitle">берет 3 отметки на Manticore</p>
+        </header>
+        
+        <div class="divider"></div>
+        
+        <main class="timer-container">
+            <h2 class="timer-title"><span class="pulse"></span> Время с момента старта <span class="pulse"></span></h2>
+            
+            <div class="timer">
+                <div class="time-unit">
+                    <div class="time-value" id="days">0</div>
+                    <div class="time-label">Дней</div>
+                </div>
+                
+                <div class="time-unit">
+                    <div class="time-value" id="hours">0</div>
+                    <div class="time-label">Часов</div>
+                </div>
+                
+                <div class="time-unit">
+                    <div class="time-value" id="minutes">0</div>
+                    <div class="time-label">Минут</div>
+                </div>
+                
+                <div class="time-unit">
+                    <div class="time-value" id="seconds">0</div>
+                    <div class="time-label">Секунд</div>
+                </div>
+            </div>
+            
+            <p class="start-date">Дата старта: <span>01.01.2022, 00:00:00</span></p>
+        </main>
+        
+        <!-- Секция с кнопкой помощи -->
+        <div class="help-section">
+            <button class="help-btn" id="helpBtn">
+                <i class="fas fa-hands-helping" style="margin-right: 10px;"></i> Помочь ему
+            </button>
+        </div>
+        
+        <!-- Контекстное меню -->
+        <div class="context-menu" id="contextMenu">
+            <div class="context-content">
+                <div class="context-message">
+                    <i class="fas fa-exclamation-triangle" style="color: #ff6b6b; margin-right: 10px;"></i>
+                    ему ничем не поможешь
+                </div>
+                <div class="context-options">
+                    <button class="context-btn understood" id="understoodBtn">понял</button>
+                    <button class="context-btn realized" id="realizedBtn">осознал</button>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="footer">
+            <p>Таймер обновляется в реальном времени | Сайт обновляется каждую секунду</p>
+        </footer>
+    </div>
+
+    <script>
+        // Устанавливаем дату старта
+        const startDate = new Date('January 1, 2022 00:00:00').getTime();
+        
+        // Функция обновления таймера
+        function updateTimer() {
+            const now = new Date().getTime();
+            const timePassed = now - startDate;
+            
+            // Вычисляем дни, часы, минуты и секунды
+            const days = Math.floor(timePassed / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timePassed % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timePassed % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timePassed % (1000 * 60)) / 1000);
+            
+            // Отображаем значения
+            document.getElementById('days').innerText = days.toString().padStart(3, '0');
+            document.getElementById('hours').innerText = hours.toString().padStart(2, '0');
+            document.getElementById('minutes').innerText = minutes.toString().padStart(2, '0');
+            document.getElementById('seconds').innerText = seconds.toString().padStart(2, '0');
+        }
+        
+        // Обновляем таймер каждую секунду
+        updateTimer();
+        setInterval(updateTimer, 1000);
+        
+        // Логика для кнопки помощи и контекстного меню
+        const helpBtn = document.getElementById('helpBtn');
+        const contextMenu = document.getElementById('contextMenu');
+        const understoodBtn = document.getElementById('understoodBtn');
+        const realizedBtn = document.getElementById('realizedBtn');
+        
+        // Открытие контекстного меню
+        helpBtn.addEventListener('click', function() {
+            contextMenu.classList.add('active');
+            // Добавляем звуковой эффект (необязательно)
+            const clickSound = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ');
+            clickSound.volume = 0.3;
+            clickSound.play().catch(e => console.log("Автовоспроизведение звука заблокировано"));
+        });
+        
+        // Закрытие контекстного меню при нажатии на "понял"
+        understoodBtn.addEventListener('click', function() {
+            contextMenu.classList.remove('active');
+            // Дополнительный эффект - кратковременное изменение текста кнопки
+            const originalText = helpBtn.innerHTML;
+            helpBtn.innerHTML = '<i class="fas fa-check" style="margin-right: 10px;"></i> Помощь отклонена';
+            helpBtn.style.background = 'linear-gradient(90deg, #2e7d32, #1b5e20)';
+            
+            setTimeout(() => {
+                helpBtn.innerHTML = originalText;
+                helpBtn.style.background = 'linear-gradient(90deg, #ff0000, #b30000)';
+            }, 1500);
+        });
+        
+        // Закрытие контекстного меню при нажатии на "осознал"
+        realizedBtn.addEventListener('click', function() {
+            contextMenu.classList.remove('active');
+            // Дополнительный эффект - кратковременное изменение текста кнопки
+            const originalText = helpBtn.innerHTML;
+            helpBtn.innerHTML = '<i class="fas fa-brain" style="margin-right: 10px;"></i> Осознано';
+            helpBtn.style.background = 'linear-gradient(90deg, #1565c0, #0d47a1)';
+            
+            setTimeout(() => {
+                helpBtn.innerHTML = originalText;
+                helpBtn.style.background = 'linear-gradient(90deg, #ff0000, #b30000)';
+            }, 1500);
+        });
+        
+        // Закрытие контекстного меню при клике вне его
+        contextMenu.addEventListener('click', function(e) {
+            if (e.target === contextMenu) {
+                contextMenu.classList.remove('active');
+            }
+        });
+        
+        // Закрытие контекстного меню при нажатии Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && contextMenu.classList.contains('active')) {
+                contextMenu.classList.remove('active');
+            }
+        });
+        
+        // Добавляем небольшой эффект при загрузке страницы
+        window.addEventListener('load', function() {
+            document.querySelector('.container').style.opacity = '0';
+            document.querySelector('.container').style.transition = 'opacity 1s';
+            
+            setTimeout(() => {
+                document.querySelector('.container').style.opacity = '1';
+            }, 100);
+        });
+    </script>
+</body>
+</html>
